@@ -1,0 +1,9 @@
+re/*.json
+re/snapshots/
+.build/
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.DS_Store
+build/
+re/decomp/

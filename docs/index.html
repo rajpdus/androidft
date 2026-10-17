@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AndroidFT</title>
+<meta name="description" content="A native Apple Silicon replacement for Google's Android File Transfer. Copy files between your Mac and Android phone over USB.">
+<link rel="icon" href="logo.png">
+<meta property="og:title" content="AndroidFT — Android file transfer for Apple Silicon Macs">
+<meta property="og:description" content="Plug in your phone, drag files both ways. Native, open source, installable with Homebrew.">
+<meta property="og:image" content="https://rajpdus.github.io/androidft/screenshot.png">
+<style>
+  :root {
+    --bg: #ffffff; --fg: #111; --muted: #5b6168; --card: #f5f7f6; --line: #e3e6e5;
+    --accent: #1f9a60; --accent-2: #4ee69a; --code: #0f1412; --code-fg: #d9fbe8;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #0f1412; --fg: #e8ece9; --muted: #9aa39e; --card: #171d1a; --line: #263029;
+    --code: #060908; --code-fg: #bff3d6;
+  } }
+  :root[data-theme="dark"] {
+    --bg: #0f1412; --fg: #e8ece9; --muted: #9aa39e; --card: #171d1a; --line: #263029;
+    --code: #060908; --code-fg: #bff3d6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif; }
+  a { color: var(--accent); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 72px 0 32px; text-align: center; }
+  header img { width: 120px; height: 120px; }
+  h1 { font-size: 44px; margin: 16px 0 8px; letter-spacing: -0.02em; }
+  .tag { font-size: 20px; color: var(--muted); margin: 0 auto 28px; max-width: 620px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 28px; }
+  .chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--card); }
+  .install { display: inline-flex; align-items: center; gap: 12px; background: var(--code); color: var(--code-fg);
+    padding: 14px 18px; border-radius: 12px; font: 15px/1 ui-monospace, "SF Mono", Menlo, monospace; max-width: 100%; overflow-x: auto; }
+  .install button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; cursor: pointer; font: inherit; }
+  .shot { display: block; width: 100%; border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.25); margin: 44px 0; }
+  section { padding: 24px 0; }
+  h2 { font-size: 28px; letter-spacing: -0.01em; margin: 0 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  pre { background: var(--code); color: var(--code-fg); padding: 16px; border-radius: 12px; overflow-x: auto; font-size: 14px; }
+  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; text-align: center; }
+  .flow div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 10px; font-size: 14px; }
+  .flow b { display: block; font-size: 15px; margin-bottom: 4px; }
+  footer { color: var(--muted); font-size: 14px; text-align: center; padding: 48px 0 64px; border-top: 1px solid var(--line); margin-top: 48px; }
+  .note { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="logo.png" alt="AndroidFT icon">
+    <h1>AndroidFT</h1>
+    <p class="tag">Copy files between your Mac and your Android phone over a USB cable. A native Apple Silicon replacement for Google's abandoned Android File Transfer.</p>
+    <div class="chips">
+      <span class="chip">macOS 14+</span><span class="chip">Apple Silicon</span><span class="chip">SwiftUI</span>
+      <span class="chip">libmtp</span><span class="chip">MIT</span><span class="chip">No background agent</span>
+    </div>
+    <div class="install"><code id="cmd">brew install --cask --no-quarantine rajpdus/tap/androidft</code><button onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button></div>
+    <p class="note">or download the <a href="https://github.com/rajpdus/androidft/releases/latest">latest release</a> · <a href="https://github.com/rajpdus/androidft">source on GitHub</a></p>
+  </header>
+
+  <img class="shot" src="screenshot.png" alt="AndroidFT showing the folders on a Pixel 3a">
+
+  <section>
+    <h2>Why a Mac cannot just see your phone</h2>
+    <p>Android phones do not show up as disks. Since Android 3.0 they speak <strong>MTP</strong>, the Media Transfer Protocol, over USB: the phone stays in control of its storage and hands files to the computer one object at a time. Windows and Linux ship an MTP client; macOS never did. Google filled the gap with Android File Transfer in 2011 and last touched it in 2018, so today it is an Intel-only binary running under Rosetta with a login-item "Agent" that seizes the USB port whenever a phone appears.</p>
+    <p>AndroidFT does the same job with current tools: a small SwiftUI app around <a href="https://github.com/libmtp/libmtp">libmtp</a>, built for arm64, with hot-plug detection inside the app instead of a helper that runs at login.</p>
+  </section>
+
+  <section>
+    <h2>How a transfer works</h2>
+    <div class="flow">
+      <div><b>1. Plug in</b>IOKit tells the app a USB device appeared</div>
+      <div><b>2. Open</b>libusb claims the MTP interface; libmtp opens a session</div>
+      <div><b>3. Browse</b>each folder is fetched on demand as a list of objects</div>
+      <div><b>4. Copy</b>GetObject / SendObject stream the bytes with progress</div>
+      <div><b>5. Done</b>the phone re-indexes the new file for its gallery and apps</div>
+    </div>
+    <p class="note">Large files move at USB 2 speed on most phones, roughly 25 to 35 MB/s. The phone must be unlocked and set to <em>File transfer</em> in the USB notification; in <em>Charging only</em> mode it exposes no storage at all.</p>
+  </section>
+
+  <section>
+    <h2>What you get</h2>
+    <div class="grid">
+      <div class="card"><h3>Finder-style browsing</h3><p>Internal storage and SD card, sortable name / date / size columns, breadcrumb path bar, back, forward and enclosing-folder navigation.</p></div>
+      <div class="card"><h3>Drag and drop both ways</h3><p>Drop files or whole folders from Finder onto the window. Drag items out to copy them to the Mac. Toolbar buttons do the same through open panels.</p></div>
+      <div class="card"><h3>New folder, rename, delete</h3><p>Everything the original could do, with confirmation before deleting and a Replace / Replace All / Skip prompt on name clashes.</p></div>
+      <div class="card"><h3>Progress you can read</h3><p>Bytes copied, total, and time remaining in a sheet you can cancel at any point.</p></div>
+      <div class="card"><h3>Connects by itself</h3><p>Plug in, unlock, choose File transfer. The app notices the phone and opens its storage. Nothing runs at login.</p></div>
+      <div class="card"><h3>Built from the original's behaviour</h3><p>Google's app was decompiled with REA and Ghidra first, so the device-open sequence and quirks that make real phones work are preserved. <a href="https://github.com/rajpdus/androidft/blob/main/re/NOTES.md">Read the notes.</a></p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Install</h2>
+<pre>brew install --cask --no-quarantine rajpdus/tap/androidft</pre>
+    <p class="note">The app is signed ad hoc rather than with an Apple Developer ID, so Gatekeeper blocks downloaded copies; <code>--no-quarantine</code> skips that. If you installed without it, run <code>xattr -dr com.apple.quarantine /Applications/AndroidFT.app</code> once.</p>
+    <p class="note">Already have Google's Android File Transfer? Quit it and remove <em>Android File Transfer Agent</em> from System Settings → General → Login Items, or it will keep grabbing the phone.</p>
+  </section>
+
+  <footer>
+    MIT licensed · bundles libmtp and libusb (LGPL-2.1) · Android is a trademark of Google LLC; this project is not affiliated with Google.<br>
+    <a href="https://github.com/rajpdus/androidft">github.com/rajpdus/androidft</a>
+  </footer>
+</div>
+</body>
+</html>
