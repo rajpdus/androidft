@@ -25,9 +25,8 @@ cask "androidft" do
 
   # The app is signed ad hoc (no Apple Developer ID); without this Gatekeeper
   # refuses to open the downloaded copy.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/AndroidFT.app"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{appdir}/AndroidFT.app"]
   end
 
   zap trash: [
