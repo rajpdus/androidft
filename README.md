@@ -46,14 +46,10 @@ AndroidFT is the same job done properly: a SwiftUI app, built for arm64, talking
 ### Homebrew
 
 ```sh
-brew install --cask --no-quarantine rajpdus/tap/androidft
+brew install --cask rajpdus/tap/androidft
 ```
 
-`--no-quarantine` is needed because the app is signed ad hoc, not with an Apple Developer ID. Without it macOS Gatekeeper refuses to open downloaded builds. If you already installed without the flag:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/AndroidFT.app
-```
+The cask removes the quarantine attribute after install because the app is signed ad hoc, not with an Apple Developer ID; otherwise macOS Gatekeeper would refuse to open it. Upgrade with `brew upgrade --cask androidft`.
 
 ### Download
 
