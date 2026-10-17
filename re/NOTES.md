@@ -83,6 +83,13 @@ Helpers/Android File Transfer Agent.app (LSBackgroundOnly login item)
 - Progress callback (`progress()`): posts `setFileInProgressBytesCopied:` to the
   main thread; only polls `shouldCancel` while more than 15 MB (0xF00000)
   remain, so small tails always finish.
+- Tested on a Pixel 3a with upstream libmtp 1.1.23: returning non-zero from the
+  progress callback mid-GetObject leaves the phone's MTP service wedged (every
+  later command fails with PTP I/O error 0x02FF; `LIBMTP_Reset_Device` and a
+  USB reset do not help, only re-plugging does). libmtp sends no PTP
+  CancelTransaction and does not drain the bulk pipe. The rewrite therefore
+  never aborts a file in flight: Cancel finishes the current file and skips the
+  rest.
 - UI strings: "Preparing to copy to …", "Copying N items to …",
   "%@ of %@ - About N minutes remaining", replace/replace-all/skip on conflict.
 

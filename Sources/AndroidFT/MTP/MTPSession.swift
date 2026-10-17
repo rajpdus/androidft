@@ -222,6 +222,16 @@ final class MTPSession {
         }
     }
 
+    /// PTP ResetDevice. A transfer cancelled mid-file leaves the phone's MTP
+    /// service wedged (every later command fails with a PTP I/O error); this
+    /// brings it back without unplugging.
+    func resetDevice() -> Bool {
+        LIBMTP_Clear_Errorstack(device)
+        let rc = LIBMTP_Reset_Device(device)
+        clearErrors()
+        return rc == 0
+    }
+
     // MARK: Helpers
 
     private func popErrors() -> String? {

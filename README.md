@@ -118,6 +118,8 @@ swift build                 # debug binary in .build/debug/AndroidFT
 | "Can't access device storage" | Phone is locked, or USB mode is *Charging only*. The app retries every 3 s. |
 | Console shows `libusb_claim_interface() = -3` | Another process holds the device: Google's Android File Transfer (and its Agent), Android Studio, `adb` with MTP, or a second copy of AndroidFT. Quit it and press Refresh. |
 | App refuses to open after download | Gatekeeper and the ad-hoc signature. See [Install](#install). |
+| Cancel keeps copying for a while | Cancel finishes the file in flight, then stops. Aborting mid-file leaves the phone's MTP service stuck until you re-plug it, so the app never does that. |
+| Every operation fails after an aborted transfer (another app, a crash) | The phone's MTP service is stuck. Unplug the cable and plug it back in; the app reconnects by itself. |
 | Copy of a 4 GB+ file fails | Some phones format their shared storage as FAT32. Split the file or use a phone with exFAT/ext4. |
 
 ## License

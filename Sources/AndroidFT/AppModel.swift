@@ -38,6 +38,9 @@ final class AppModel {
     private var retryTask: Task<Void, Never>?
     private var listingCache: [String: [MTPEntry]] = [:]
 
+    /// Test hook: the open libmtp session (only one process-wide can exist).
+    var sessionForTesting: MTPSession? { session }
+
     var currentStorage: MTPStorage? { storages.first { $0.id == selectedStorageID } }
     var currentFolderID: UInt32? { path.last?.id }
     var canGoBack: Bool { !history.isEmpty }
@@ -273,8 +276,10 @@ final class AppModel {
         let job = Transfer(direction: .download, destinationName: directory.lastPathComponent)
         job.itemCount = items.count
         transfer = job
+        let activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .idleSystemSleepDisabled],
+                                                             reason: "Copying files from device")
         Task {
-            defer { transfer = nil }
+            defer { transfer = nil; ProcessInfo.processInfo.endActivity(activity) }
             do {
                 // Preflight: walk folders to know the total size (shows "Preparing to copy…").
                 var plan: [(MTPEntry, URL)] = []
@@ -301,10 +306,13 @@ final class AppModel {
                     job.currentName = entry.name
                     job.bytesInProgress = 0
                     let tmp = dest.deletingLastPathComponent().appendingPathComponent(".\(entry.name).aft-part")
+                    // Never abort mid-file: libmtp leaves the phone's MTP service wedged
+                    // after an aborted GetObject, so cancel takes effect between files.
+                    let progress = ProgressThrottle(job)
                     try await MTPSession.run {
-                        try session.download(entry, to: tmp) { sent, _ in
-                            Task { @MainActor in job.bytesInProgress = sent }
-                            return job.cancelled
+                        try session.download(entry, to: tmp) { sent, total in
+                            progress.post(sent, total)
+                            return false
                         }
                     }
                     _ = try? FileManager.default.replaceItemAt(dest, withItemAt: tmp)
@@ -351,8 +359,10 @@ final class AppModel {
         let job = Transfer(direction: .upload, destinationName: destName)
         job.itemCount = urls.count
         transfer = job
+        let activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .idleSystemSleepDisabled],
+                                                             reason: "Copying files to device")
         Task {
-            defer { transfer = nil; reload() }
+            defer { transfer = nil; reload(); ProcessInfo.processInfo.endActivity(activity) }
             do {
                 // Preflight: total bytes of everything we are about to send.
                 var total: UInt64 = 0
@@ -397,10 +407,11 @@ final class AppModel {
         } else {
             job.currentName = name
             job.bytesInProgress = 0
+            let progress = ProgressThrottle(job)
             let sent = try await MTPSession.run {
-                try session.upload(url, name: name, storage: storage, parent: parent) { sent, _ in
-                    Task { @MainActor in job.bytesInProgress = sent }
-                    return job.cancelled
+                try session.upload(url, name: name, storage: storage, parent: parent) { sent, total in
+                    progress.post(sent, total)
+                    return false   // see download(): no mid-file abort
                 }
             }
             job.bytesCompleted += sent.size
@@ -442,5 +453,19 @@ final class AppModel {
         let mtp = error as? MTPError
         alert = AlertInfo(title: title ?? mtp?.errorDescription ?? "Could not communicate with device",
                           message: mtp?.recoverySuggestion ?? error.localizedDescription)
+    }
+}
+
+/// libmtp reports progress every USB chunk (~16 KB). Forward at most one update
+/// per megabyte, plus the final one, so a multi-gigabyte copy does not flood the UI.
+private final class ProgressThrottle {
+    private let job: Transfer
+    private var last: UInt64 = 0
+    init(_ job: Transfer) { self.job = job }
+    func post(_ sent: UInt64, _ total: UInt64) {
+        guard sent == total || sent &- last >= 1_048_576 else { return }
+        last = sent
+        let job = job
+        Task { @MainActor in job.bytesInProgress = sent }
     }
 }

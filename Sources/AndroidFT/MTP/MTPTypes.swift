@@ -77,7 +77,7 @@ enum MTPError: LocalizedError, Equatable {
     var recoverySuggestion: String? {
         switch self {
         case .noDevice: return "Please connect your Android device with a USB cable to get started."
-        case .storageLocked: return "Make sure your device is unlocked and \"File Transfer\" or \"MTP\" mode is selected."
+        case .storageLocked: return "Make sure your device is unlocked and \"File Transfer\" or \"MTP\" mode is selected. If it already is, unplug the cable and plug it back in."
         case .cannotConnect, .createFolderFailed, .renameFailed: return "Try reconnecting or restarting your device."
         case .communication(let detail): return detail.isEmpty ? "Try reconnecting or restarting your device." : detail
         case .copyFailed(let name): return "Could not copy file \"\(name)\""

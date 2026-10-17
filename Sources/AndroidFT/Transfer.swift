@@ -34,6 +34,7 @@ final class Transfer: Identifiable {
     }
 
     var detail: String {
+        if cancelled { return "Finishing the current file, then stopping" }
         guard preflightComplete, bytesTotal > 0 else { return "" }
         let elapsed = Date().timeIntervalSince(startTime)
         let remaining: TimeInterval? = bytesCopied > 0 && elapsed > 2
