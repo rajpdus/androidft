@@ -61,7 +61,7 @@
       <span class="chip">macOS 14+</span><span class="chip">Apple Silicon</span><span class="chip">SwiftUI</span>
       <span class="chip">libmtp</span><span class="chip">MIT</span><span class="chip">No background agent</span>
     </div>
-    <div class="install"><code id="cmd">brew install --cask rajpdus/tap/androidft</code><button onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button></div>
+    <div class="install"><code id="cmd">brew tap rajpdus/tap &amp;&amp; brew trust rajpdus/tap &amp;&amp; brew install --cask androidft</code><button onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button></div>
     <p class="note">or download the <a href="https://github.com/rajpdus/androidft/releases/latest">latest release</a> · <a href="https://github.com/rajpdus/androidft">source on GitHub</a></p>
   </header>
 
@@ -99,7 +99,9 @@
 
   <section>
     <h2>Install</h2>
-<pre>brew install --cask rajpdus/tap/androidft</pre>
+<pre>brew tap rajpdus/tap
+brew trust rajpdus/tap        # Homebrew 7 asks you to trust third-party taps once
+brew install --cask androidft</pre>
     <p class="note">The app is signed ad hoc rather than with an Apple Developer ID, so Gatekeeper would block a plain download; the cask clears the quarantine flag after installing. For a manual download, run <code>xattr -dr com.apple.quarantine /Applications/AndroidFT.app</code> once.</p>
     <p class="note">Already have Google's Android File Transfer? Quit it and remove <em>Android File Transfer Agent</em> from System Settings → General → Login Items, or it will keep grabbing the phone.</p>
   </section>

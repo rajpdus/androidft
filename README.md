@@ -46,7 +46,9 @@ AndroidFT is the same job done properly: a SwiftUI app, built for arm64, talking
 ### Homebrew
 
 ```sh
-brew install --cask rajpdus/tap/androidft
+brew tap rajpdus/tap
+brew trust rajpdus/tap        # Homebrew 7 asks you to trust third-party taps once
+brew install --cask androidft
 ```
 
 The cask removes the quarantine attribute after install because the app is signed ad hoc, not with an Apple Developer ID; otherwise macOS Gatekeeper would refuse to open it. Upgrade with `brew upgrade --cask androidft`.
@@ -102,7 +104,11 @@ swift build                 # debug binary in .build/debug/AndroidFT
 
 `swift test` runs an end-to-end test against an attached phone: it creates a scratch folder at the storage root, uploads 1 MiB of random data, lists it, downloads it back and compares bytes, renames it and deletes the folder. The test skips when no MTP device is attached.
 
-`scripts/release.sh 0.2.0` stamps the version, builds the bundle and writes `build/AndroidFT-0.2.0.zip` plus `SHA256SUMS.txt`. Pushing a `v*` tag runs the same in GitHub Actions and publishes a release.
+### Releasing
+
+1. `scripts/release.sh 0.2.0` stamps the version into `scripts/Info.plist`; commit it.
+2. `git tag v0.2.0 && git push origin main v0.2.0`. GitHub Actions builds the bundle on an Apple Silicon runner and publishes `AndroidFT-0.2.0.zip` and `SHA256SUMS.txt` to the release. The CI zip is the canonical artifact; a local build will not have the same checksum.
+3. `scripts/update-cask.sh 0.2.0 <sha256 from SHA256SUMS.txt> > ../homebrew-tap/Casks/androidft.rb`, then `brew style` and `brew audit --cask --online rajpdus/tap/androidft` in the tap, commit and push.
 
 ## Troubleshooting
 
