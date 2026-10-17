@@ -76,6 +76,9 @@ final class AppModel {
             path = []
             listingCache.removeAll()
             state = .noDevice
+            // USB events can be missed (e.g. the phone re-enumerates while we launch),
+            // so keep looking while nothing is attached.
+            scheduleRetry()
             return
         }
         if session == nil {
@@ -120,7 +123,7 @@ final class AppModel {
             try? await Task.sleep(for: .seconds(3))
             guard !Task.isCancelled else { return }
             // A failed open leaves a half-initialised handle; start fresh.
-            if self?.state == .locked, self?.storages.isEmpty == true { self?.session = nil }
+            if self?.state != .connected { self?.session = nil }
             await self?.detectAndOpen()
         }
     }
@@ -132,8 +135,10 @@ final class AppModel {
     func reload(useCache: Bool = false) {
         guard let session, let storage = selectedStorageID else { return }
         let parent = currentFolderID
-        if useCache, let cached = listingCache[cacheKey(storage, parent)] {
-            entries = cached
+        if useCache {
+            // Show the cached listing straight away, or an empty table rather than
+            // the previous folder's rows under the new title.
+            entries = listingCache[cacheKey(storage, parent)] ?? []
             return
         }
         isLoading = true
